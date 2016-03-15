@@ -10,7 +10,6 @@ import (
 	"github.com/howeyc/gopass"
 	. "github.com/tendermint/go-common"
 	"github.com/tendermint/go-crypto"
-	"github.com/tendermint/go-wire"
 	"github.com/tendermint/mintkey/wordlist"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -104,7 +103,7 @@ func encryptPrivKey(privKey crypto.PrivKey, passphrase string) []byte {
 		Exit("Error generating bcrypt key from passphrase: " + err.Error())
 	}
 	key = crypto.Sha256(key) // Get 32 bytes
-	privKeyBytes := wire.BinaryBytes(privKey)
+	privKeyBytes := privKey.Bytes()
 	return crypto.EncryptSymmetric(privKeyBytes, key)
 }
 
@@ -118,6 +117,6 @@ func decryptPrivKey(encBytes []byte, passphrase string) (privKey crypto.PrivKey,
 	if err != nil {
 		return nil, err
 	}
-	err = wire.ReadBinaryBytes(privKeyBytes, &privKey)
+	privKey, err = crypto.PrivKeyFromBytes(privKeyBytes)
 	return privKey, err
 }
