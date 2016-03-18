@@ -1,42 +1,23 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"path"
 	"strings"
 
-	"github.com/howeyc/gopass"
+	"github.com/codegangsta/cli"
 	. "github.com/tendermint/go-common"
 	"github.com/tendermint/go-crypto"
 	"github.com/tendermint/mintkey/wordlist"
-	"golang.org/x/crypto/bcrypt"
 )
 
-func readlineKeyboardPass() string {
-	str, err := gopass.GetPasswdMasked()
-	if err != nil {
-		Exit("Error reading from keyboard: " + err.Error())
-	}
-	return string(str)
-}
-
-func readlineKeyboard() string {
-	reader := bufio.NewReader(os.Stdin)
-	text, err := reader.ReadString('\n')
-	if err != nil {
-		Exit("Error reading from keyboard: " + err.Error())
-	}
-	return text
-}
-
-func main() {
+// cli entrypoint to generate a key
+func cmdGen(c *cli.Context) {
 
 	fmt.Println("Generating public/private key pair.")
 
 	// Ask where to save the file.
-	defaultSavePath := os.Getenv("HOME") + "/.mintkey/priv_key"
+	defaultSavePath := defaultPath("priv_key")
 	fmt.Print(Fmt("Enter file in which to save the key (%v): ", defaultSavePath))
 	savePath := strings.TrimSpace(readlineKeyboard())
 	if savePath == "" {
@@ -81,9 +62,7 @@ func main() {
 	if passStr != passStr2 {
 		Exit("Passphrase didn't match!")
 	}
-	encBytes := encryptPrivKey(privKey, passStr)
-	header := map[string]string{"Encryption": "NACLv0"}
-	armorStr := crypto.EncodeArmor("TENDERMINT PRIVATE KEY", header, encBytes)
+	armorStr := encryptArmorPrivKey(privKey, passStr)
 
 	// Save armored & encrypted key to file
 	WriteFile(savePath, []byte(armorStr), 0600)
@@ -95,28 +74,4 @@ func generatePrivKey() (privKey crypto.PrivKey, secret []byte) {
 	secret = crypto.CRandBytes(16)
 	privKey = crypto.GenPrivKeyEd25519FromSecret(secret)
 	return
-}
-
-func encryptPrivKey(privKey crypto.PrivKey, passphrase string) []byte {
-	key, err := bcrypt.GenerateFromPassword([]byte(passphrase), 12) // TODO parameterize.  12 is good today (2016)
-	if err != nil {
-		Exit("Error generating bcrypt key from passphrase: " + err.Error())
-	}
-	key = crypto.Sha256(key) // Get 32 bytes
-	privKeyBytes := privKey.Bytes()
-	return crypto.EncryptSymmetric(privKeyBytes, key)
-}
-
-func decryptPrivKey(encBytes []byte, passphrase string) (privKey crypto.PrivKey, err error) {
-	key, err := bcrypt.GenerateFromPassword([]byte(passphrase), 12) // TODO parameterize.  12 is good today (2016)
-	if err != nil {
-		Exit("Error generating bcrypt key from passphrase: " + err.Error())
-	}
-	key = crypto.Sha256(key) // Get 32 bytes
-	privKeyBytes, err := crypto.DecryptSymmetric(encBytes, key)
-	if err != nil {
-		return nil, err
-	}
-	privKey, err = crypto.PrivKeyFromBytes(privKeyBytes)
-	return privKey, err
 }
