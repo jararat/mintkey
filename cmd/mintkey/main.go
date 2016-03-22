@@ -33,6 +33,14 @@ func main() {
 			},
 		},
 		{
+			Name:  "show",
+			Usage: "show key information",
+			Flags: []cli.Flag{privKeyFlag},
+			Action: func(c *cli.Context) {
+				cmdShow(c)
+			},
+		},
+		{
 			Name:  "sign",
 			Usage: "sign some bytes",
 			Flags: []cli.Flag{privKeyFlag},

@@ -93,3 +93,22 @@ func decryptPrivKey(saltBytes []byte, encBytes []byte, passphrase string) (privK
 func defaultPath(file string) string {
 	return os.Getenv("HOME") + "/.mintkey/" + file
 }
+
+func loadPrivKey(privKeyPath string) (crypto.PrivKey, error) {
+	// Load the armored encrypted privkey bytes
+	armorBytes, err := ReadFile(privKeyPath)
+	if err != nil {
+		return nil, err
+	}
+	armorStr := string(armorBytes)
+
+	// Ask for password
+	fmt.Println("Enter your passphrase:")
+	passphrase := readlineKeyboardPass()
+	privKey, err := unarmorDecryptPrivKey(armorStr, passphrase)
+	if err != nil {
+		return nil, err
+	}
+
+	return privKey, nil
+}

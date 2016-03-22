@@ -6,7 +6,6 @@ import (
 
 	"github.com/codegangsta/cli"
 	. "github.com/tendermint/go-common"
-	"github.com/tendermint/go-crypto"
 	"github.com/tendermint/go-wire/expr"
 )
 
@@ -35,23 +34,4 @@ func cmdSign(c *cli.Context) {
 	fmt.Printf("Wire bytes: %X\n", signBytes)
 	signature := privKey.Sign(signBytes)
 	fmt.Printf("Signature: %X\n", signature.Bytes())
-}
-
-func loadPrivKey(privKeyPath string) (crypto.PrivKey, error) {
-	// Load the armored encrypted privkey bytes
-	armorBytes, err := ReadFile(privKeyPath)
-	if err != nil {
-		return nil, err
-	}
-	armorStr := string(armorBytes)
-
-	// Ask for password
-	fmt.Println("Enter your passphrase:")
-	passphrase := readlineKeyboardPass()
-	privKey, err := unarmorDecryptPrivKey(armorStr, passphrase)
-	if err != nil {
-		return nil, err
-	}
-
-	return privKey, nil
 }
