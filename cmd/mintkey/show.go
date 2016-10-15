@@ -19,9 +19,17 @@ func cmdShow(c *cli.Context) {
 		Exit("Error loading private key: " + err.Error())
 	}
 
+	// Show privKey too?
+	showPrivKey := c.Bool("show-priv")
+
 	// Show pubkey
 	pubKey := privKey.PubKey()
 	fmt.Printf("PubKey Address: %X\n", pubKey.Address())
 	fmt.Printf("PubKey Bytes:   %X\n", pubKey.Bytes())
 	fmt.Printf("PubKey JSON:    %v\n", string(wire.JSONBytesPretty(struct{ crypto.PubKey }{pubKey})))
+
+	// Show privkey
+	if showPrivKey {
+		fmt.Printf("PrivKey Bytes:  %X\n", privKey.Bytes())
+	}
 }

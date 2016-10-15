@@ -11,7 +11,11 @@ func main() {
 	privKeyFlag := cli.StringFlag{
 		Name:  "priv-key",
 		Value: defaultPath("priv_key"),
-		Usage: "Wire expression of message to sign",
+		Usage: "path to priv-key",
+	}
+	showPrivFlag := cli.BoolFlag{
+		Name:  "show-priv",
+		Usage: "whether to show private information",
 	}
 	/*
 		quietFlag := cli.BoolFlag{
@@ -35,7 +39,7 @@ func main() {
 		{
 			Name:  "show",
 			Usage: "show key information",
-			Flags: []cli.Flag{privKeyFlag},
+			Flags: []cli.Flag{privKeyFlag, showPrivFlag},
 			Action: func(c *cli.Context) {
 				cmdShow(c)
 			},
